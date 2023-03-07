@@ -53,10 +53,18 @@ pub struct ConsensusConfig {
     pub wait_for_full_blocks_above_recent_fill_threshold: f32,
     pub intra_consensus_channel_buffer_size: usize,
     pub quorum_store_configs: QuorumStoreConfig,
+    pub consensus_backpressure: ConsensusBackpressureValues,
     // Used to decide if backoff is needed.
     // must match one of the CHAIN_HEALTH_WINDOW_SIZES values.
     pub window_for_chain_health: usize,
     pub chain_health_backoff: Vec<ChainHealthBackoffValues>,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+pub struct ConsensusBackpressureValues {
+    pub back_pressure_limit: u64,
+    pub max_sending_block_txns_override: u64,
+    pub max_sending_block_bytes_override: u64,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
@@ -103,6 +111,11 @@ impl Default for ConsensusConfig {
             intra_consensus_channel_buffer_size: 10,
             quorum_store_configs: QuorumStoreConfig::default(),
 
+            consensus_backpressure: ConsensusBackpressureValues {
+                back_pressure_limit: 10,
+                max_sending_block_txns_override: 100,
+                max_sending_block_bytes_override: 25 * 1024,
+            },
             window_for_chain_health: 100,
             chain_health_backoff: vec![
                 ChainHealthBackoffValues {

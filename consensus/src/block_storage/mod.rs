@@ -59,5 +59,7 @@ pub trait BlockReader: Send + Sync {
     fn sync_info(&self) -> SyncInfo;
 
     /// Return if the consensus is backpressured
-    fn back_pressure(&self) -> bool;
+    fn vote_back_pressure(&self) -> bool;
+
+    fn proposal_back_pressure(&self) -> bool;
 }

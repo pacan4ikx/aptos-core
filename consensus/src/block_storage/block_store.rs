@@ -495,7 +495,11 @@ impl BlockStore {
             .store(back_pressure, Ordering::Relaxed)
     }
 
-    pub fn back_pressure(&self) -> bool {
+    pub fn vote_back_pressure(&self) -> bool {
+        false
+    }
+
+    pub fn proposal_back_pressure(&self) -> bool {
         #[cfg(any(test, feature = "fuzzing"))]
         {
             if self.back_pressure_for_test.load(Ordering::Relaxed) {
@@ -570,8 +574,12 @@ impl BlockReader for BlockStore {
         )
     }
 
-    fn back_pressure(&self) -> bool {
-        self.back_pressure()
+    fn vote_back_pressure(&self) -> bool {
+        self.vote_back_pressure()
+    }
+
+    fn proposal_back_pressure(&self) -> bool {
+        self.proposal_back_pressure()
     }
 }
 

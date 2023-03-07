@@ -934,9 +934,11 @@ fn individual_workload_tests(test_name: String, config: ForgeConfig) -> ForgeCon
                 ])
             } else {
                 if test_name == "publishing" {
-                    job = job.max_transactions_per_account(1).mode(EmitJobMode::MaxLoad {
-                        mempool_backlog: 2000,
-                    });
+                    job = job
+                        .max_transactions_per_account(1)
+                        .mode(EmitJobMode::MaxLoad {
+                            mempool_backlog: 2000,
+                        });
                 }
                 job.transaction_type(match test_name.as_str() {
                     "account_creation" => TransactionType::default_account_generation(),
