@@ -152,6 +152,19 @@ diesel::table! {
 }
 
 diesel::table! {
+    current_objects (object_address) {
+        object_address -> Varchar,
+        owner_address -> Nullable<Varchar>,
+        state_key_hash -> Varchar,
+        allow_ungated_transfer -> Nullable<Bool>,
+        last_guid_creation_num -> Nullable<Numeric>,
+        last_transaction_version -> Int8,
+        is_deleted -> Bool,
+        inserted_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     current_staking_pool_voter (staking_pool_address) {
         staking_pool_address -> Varchar,
         voter_address -> Varchar,
@@ -307,6 +320,7 @@ diesel::table! {
         data -> Nullable<Jsonb>,
         is_deleted -> Bool,
         inserted_at -> Timestamp,
+        state_key_hash -> Varchar,
     }
 }
 
@@ -318,6 +332,20 @@ diesel::table! {
         point_type -> Text,
         amount -> Numeric,
         transaction_timestamp -> Timestamp,
+        inserted_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    objects (transaction_version, write_set_change_index) {
+        transaction_version -> Int8,
+        write_set_change_index -> Int8,
+        object_address -> Varchar,
+        owner_address -> Nullable<Varchar>,
+        state_key_hash -> Varchar,
+        guid_creation_num -> Nullable<Numeric>,
+        allow_ungated_transfer -> Nullable<Bool>,
+        is_deleted -> Bool,
         inserted_at -> Timestamp,
     }
 }
@@ -541,6 +569,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     current_coin_balances,
     current_collection_datas,
     current_delegator_balances,
+    current_objects,
     current_staking_pool_voter,
     current_table_items,
     current_token_datas,
@@ -553,6 +582,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     move_modules,
     move_resources,
     nft_points,
+    objects,
     processor_status,
     processor_statuses,
     proposal_votes,
