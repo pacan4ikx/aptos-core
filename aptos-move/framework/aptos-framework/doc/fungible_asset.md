@@ -979,6 +979,7 @@ Get the balance of a given wallet.
 ## Function `ungated_transfer_allowed`
 
 Return whether a wallet can freely send or receive fungible assets.
+If the wallet has not been created, we default to returning true as deposits can be sent to it.
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="fungible_asset.md#0x1_fungible_asset_ungated_transfer_allowed">ungated_transfer_allowed</a>&lt;T: key&gt;(wallet: <a href="object.md#0x1_object_Object">object::Object</a>&lt;T&gt;): bool
@@ -991,7 +992,8 @@ Return whether a wallet can freely send or receive fungible assets.
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="fungible_asset.md#0x1_fungible_asset_ungated_transfer_allowed">ungated_transfer_allowed</a>&lt;T: key&gt;(wallet: Object&lt;T&gt;): bool <b>acquires</b> <a href="fungible_asset.md#0x1_fungible_asset_FungibleAssetWallet">FungibleAssetWallet</a> {
-    borrow_wallet_resource(&wallet).allow_ungated_transfer
+    !<a href="fungible_asset.md#0x1_fungible_asset_wallet_exists">wallet_exists</a>(<a href="object.md#0x1_object_object_address">object::object_address</a>(&wallet)) ||
+        borrow_wallet_resource(&wallet).allow_ungated_transfer
 }
 </code></pre>
 
@@ -1323,12 +1325,7 @@ Mint the specified <code>amount</code> of fungible asset to a destination wallet
     ref: &<a href="fungible_asset.md#0x1_fungible_asset_MintRef">MintRef</a>,
     wallet: Object&lt;T&gt;,
     amount: u64,
-<<<<<<< HEAD
-) <b>acquires</b> <a href="fungible_asset.md#0x1_fungible_asset_FungibleAssetMetadata">FungibleAssetMetadata</a>, <a href="fungible_asset.md#0x1_fungible_asset_FungibleAssetWallet">FungibleAssetWallet</a> {
-=======
 ) <b>acquires</b> <a href="fungible_asset.md#0x1_fungible_asset_FungibleAssetMetadata">FungibleAssetMetadata</a>, <a href="fungible_asset.md#0x1_fungible_asset_FungibleAssetMetadataEvents">FungibleAssetMetadataEvents</a>, <a href="fungible_asset.md#0x1_fungible_asset_FungibleAssetWallet">FungibleAssetWallet</a>, <a href="fungible_asset.md#0x1_fungible_asset_FungibleAssetWalletEvents">FungibleAssetWalletEvents</a> {
-    <b>assert</b>!(ref.metadata == <a href="fungible_asset.md#0x1_fungible_asset_wallet_metadata">wallet_metadata</a>(wallet), <a href="../../aptos-stdlib/../move-stdlib/doc/error.md#0x1_error_invalid_argument">error::invalid_argument</a>(<a href="fungible_asset.md#0x1_fungible_asset_EMINT_REF_AND_WALLET_MISMATCH">EMINT_REF_AND_WALLET_MISMATCH</a>));
->>>>>>> 7b7d116eb2 (Add events to fungible_asset)
     <a href="fungible_asset.md#0x1_fungible_asset_deposit">deposit</a>(wallet, <a href="fungible_asset.md#0x1_fungible_asset_mint">mint</a>(ref, amount));
 }
 </code></pre>
