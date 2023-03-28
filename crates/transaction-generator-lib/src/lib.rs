@@ -11,7 +11,13 @@ use aptos_sdk::{
     types::{transaction::SignedTransaction, LocalAccount},
 };
 use async_trait::async_trait;
-use std::sync::{atomic::AtomicUsize, Arc};
+use std::{
+    collections::HashMap,
+    sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc,
+    },
+};
 
 pub mod account_generator;
 pub mod accounts_pool_wrapper;
@@ -102,6 +108,14 @@ pub trait TransactionGenerator: Sync + Send {
     ) -> Vec<SignedTransaction>;
 }
 
+pub struct CounterState {
+    pub submit_failures: Vec<AtomicUsize>,
+    pub wait_failures: Vec<AtomicUsize>,
+    pub successes: AtomicUsize,
+    // (success, submit_fail, wait_fail)
+    pub by_client: HashMap<String, (AtomicUsize, AtomicUsize, AtomicUsize)>,
+}
+
 #[async_trait]
 pub trait TransactionGeneratorCreator: Sync + Send {
     async fn create_transaction_generator(&mut self) -> Box<dyn TransactionGenerator>;
@@ -118,8 +132,59 @@ pub trait TransactionExecutor: Sync + Send {
     async fn execute_transactions_with_counter(
         &self,
         txns: &[SignedTransaction],
-        failure_counter: &[AtomicUsize],
+        state: &CounterState,
     ) -> Result<()>;
+
+    fn create_counter_state(&self) -> CounterState;
+}
+
+fn failed_requests_to_trimmed_vec(failed_requests: &[AtomicUsize]) -> Vec<usize> {
+    let mut result = failed_requests
+        .iter()
+        .map(|c| c.load(Ordering::Relaxed))
+        .collect::<Vec<_>>();
+    while result.len() > 1 && *result.last().unwrap() == 0 {
+        result.pop();
+    }
+    result
+}
+
+impl CounterState {
+    pub fn show_simple(&self) -> String {
+        format!(
+            "success {}, failed submit {:?}, failed wait {:?}",
+            self.successes.load(Ordering::Relaxed),
+            failed_requests_to_trimmed_vec(&self.submit_failures),
+            failed_requests_to_trimmed_vec(&self.wait_failures)
+        )
+    }
+
+    pub fn show_detailed(&self) -> String {
+        format!(
+            "{}, by client: {}",
+            self.show_simple(),
+            self.by_client
+                .iter()
+                .flat_map(|(name, (success, fail_submit, fail_wait))| {
+                    let num_s = success.load(Ordering::Relaxed);
+                    let num_fs = fail_submit.load(Ordering::Relaxed);
+                    let num_fw = fail_wait.load(Ordering::Relaxed);
+                    if num_fs + num_fw > 0 {
+                        Some(format!(
+                            "[({}, {}, {}): {}]",
+                            num_s,
+                            num_fs,
+                            num_fw,
+                            name
+                        ))
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join("\n"),
+        )
+    }
 }
 
 pub async fn create_txn_generator_creator(
