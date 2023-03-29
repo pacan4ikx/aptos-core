@@ -150,6 +150,8 @@ pub struct VerifyOpt {
         state snapshot verification. [Defaults to the latest snapshot]"
     )]
     state_snapshot_before_version: Option<Version>,
+    #[clap(long, help = "While verifying a snapshot, run module validation.")]
+    validate_modules: bool,
 }
 
 impl Command {
@@ -230,6 +232,7 @@ impl Command {
                     opt.start_version.unwrap_or(0),
                     opt.end_version.unwrap_or(Version::MAX),
                     opt.state_snapshot_before_version.unwrap_or(Version::MAX),
+                    opt.validate_modules,
                 )?
                 .run()
                 .await?

@@ -30,6 +30,7 @@ pub struct VerifyCoordinator {
     start_version: Version,
     end_version: Version,
     state_snapshot_before_version: Version,
+    validate_modules: bool,
 }
 
 impl VerifyCoordinator {
@@ -41,6 +42,7 @@ impl VerifyCoordinator {
         start_version: Version,
         end_version: Version,
         state_snapshot_before_version: Version,
+        validate_modules: bool,
     ) -> Result<Self> {
         Ok(Self {
             storage,
@@ -50,6 +52,7 @@ impl VerifyCoordinator {
             start_version,
             end_version,
             state_snapshot_before_version,
+            validate_modules,
         })
     }
 
@@ -112,7 +115,7 @@ impl VerifyCoordinator {
                 StateSnapshotRestoreOpt {
                     manifest_handle: backup.manifest,
                     version: backup.version,
-                    validate_modules: false,
+                    validate_modules: self.validate_modules,
                 },
                 global_opt.clone(),
                 Arc::clone(&self.storage),
