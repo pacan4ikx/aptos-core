@@ -27,6 +27,9 @@ pub struct VerifyCoordinator {
     metadata_cache_opt: MetadataCacheOpt,
     trusted_waypoints_opt: TrustedWaypointOpt,
     concurrent_downloads: usize,
+    start_version: Version,
+    end_version: Version,
+    state_snapshot_before_version: Version,
 }
 
 impl VerifyCoordinator {
@@ -35,12 +38,18 @@ impl VerifyCoordinator {
         metadata_cache_opt: MetadataCacheOpt,
         trusted_waypoints_opt: TrustedWaypointOpt,
         concurrent_downloads: usize,
+        start_version: Version,
+        end_version: Version,
+        state_snapshot_before_version: Version,
     ) -> Result<Self> {
         Ok(Self {
             storage,
             metadata_cache_opt,
             trusted_waypoints_opt,
             concurrent_downloads,
+            start_version,
+            end_version,
+            state_snapshot_before_version,
         })
     }
 
@@ -71,8 +80,10 @@ impl VerifyCoordinator {
         )
         .await?;
         let ver_max = Version::max_value();
-        let state_snapshot = metadata_view.select_state_snapshot(ver_max)?;
-        let transactions = metadata_view.select_transaction_backups(0, ver_max)?;
+        let state_snapshot =
+            metadata_view.select_state_snapshot(self.state_snapshot_before_version)?;
+        let transactions =
+            metadata_view.select_transaction_backups(self.start_version, self.end_version)?;
         let epoch_endings = metadata_view.select_epoch_ending_backups(ver_max)?;
 
         let global_opt = GlobalRestoreOptions {
