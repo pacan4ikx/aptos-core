@@ -56,6 +56,7 @@ pub enum ProtocolId {
     PeerMonitoringServiceRpc = 10,
     ConsensusRpcCompressed = 11,
     ConsensusDirectSendCompressed = 12,
+    PeerMonitoringServiceDirectSend = 13,
 }
 
 /// The encoding types for Protocols
@@ -82,6 +83,7 @@ impl ProtocolId {
             PeerMonitoringServiceRpc => "PeerMonitoringServiceRpc",
             ConsensusRpcCompressed => "ConsensusRpcCompressed",
             ConsensusDirectSendCompressed => "ConsensusDirectSendCompressed",
+            PeerMonitoringServiceDirectSend => "PeerMonitoringServiceDirectSend",
         }
     }
 

@@ -16,6 +16,7 @@ use aptos_network::application::{
 };
 use aptos_peer_monitoring_service_types::{PeerMonitoringMetadata, PeerMonitoringServiceMessage};
 use aptos_time_service::{TimeService, TimeServiceTrait};
+use cfg_if::cfg_if;
 use error::Error;
 use futures::StreamExt;
 use network::PeerMonitoringServiceClient;
@@ -102,9 +103,8 @@ async fn start_peer_monitor_with_state(
 
     // Create an interval ticker for the monitor loop
     let monitoring_service_config = node_config.peer_monitoring_service.clone();
-    let peer_monitor_duration =
-        Duration::from_millis(monitoring_service_config.peer_monitor_interval_ms);
-    let peer_monitor_ticker = time_service.interval(peer_monitor_duration);
+    let monitor_interval_duration = calculate_monitor_interval_duration(&monitoring_service_config);
+    let peer_monitor_ticker = time_service.interval(monitor_interval_duration);
     futures::pin_mut!(peer_monitor_ticker);
 
     // Start the peer monitoring loop
@@ -152,6 +152,36 @@ async fn start_peer_monitor_with_state(
                 .event(LogEvent::UnexpectedErrorEncountered)
                 .error(&error)
                 .message("Failed to refresh peer states!"));
+        }
+    }
+}
+
+/// Calculates the duration between each peer monitor loop execution
+pub(crate) fn calculate_monitor_interval_duration(
+    monitoring_service_config: &PeerMonitoringServiceConfig,
+) -> Duration {
+    // If network performance monitoring is enabled, we need to run as fast
+    // as the performance monitor message interval duration.
+    cfg_if! {
+        // By default, network performance monitoring is disabled
+        if #[cfg(feature = "network-perf-test")] {
+            // Convert the monitor interval milliseconds to microseconds
+            let mut peer_monitor_interval_usecs = monitoring_service_config.peer_monitor_interval_ms * 1000;
+
+            // If direct-send performance monitoring is enabled, modify the peer monitor interval
+            let performance_monitoring_config = monitoring_service_config.performance_monitoring;
+            if performance_monitoring_config.enable_direct_send_testing {
+                peer_monitor_interval_usecs = std::min(peer_monitor_interval_usecs, performance_monitoring_config.direct_send_interval_usec);
+            }
+
+            // If RPC performance monitoring is enabled, modify the peer monitor interval
+            if performance_monitoring_config.rpc_performance_monitoring.enabled {
+                peer_monitor_interval_usecs = std::min(peer_monitor_interval_usecs, performance_monitoring_config.rpc_interval_usec);
+            }
+
+            Duration::from_micros(peer_monitor_interval_usecs)
+        } else {
+            Duration::from_millis(monitoring_service_config.peer_monitor_interval_ms)
         }
     }
 }

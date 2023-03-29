@@ -27,6 +27,7 @@ aptos-time-service = { workspace = true }
 aptos-types = { workspace = true }
 bcs = { workspace = true }
 bytes = { workspace = true }
+cfg_block = { workspace = true }
 futures = { workspace = true }
 once_cell = { workspace = true }
 serde = { workspace = true }
@@ -37,8 +38,12 @@ tokio = { workspace = true }
 anyhow = { workspace = true }
 aptos-crypto = { workspace = true }
 aptos-network = { workspace = true, features = ["fuzzing"] }
+aptos-peer-monitoring-service-types = { workspace = true }
 aptos-time-service = { workspace = true, features = ["testing"] }
 claims = { workspace = true }
 maplit = { workspace = true }
 mockall = { workspace = true }
 rand = { workspace = true }
+
+[features]
+network-perf-test = [ "aptos-peer-monitoring-service-types/network-perf-test" ]

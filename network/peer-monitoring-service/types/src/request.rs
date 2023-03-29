@@ -1,15 +1,20 @@
 // Copyright © Aptos Foundation
 // SPDX-License-Identifier: Apache-2.0
 
+use cfg_block::cfg_block;
 use serde::{Deserialize, Serialize};
 
 /// A peer monitoring service request
-#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub enum PeerMonitoringServiceRequest {
     GetNetworkInformation,    // Returns relevant network information for the peer
     GetNodeInformation,       // Returns relevant node information about the peer
     GetServerProtocolVersion, // Fetches the protocol version run by the server
     LatencyPing(LatencyPingRequest), // A simple message used by the client to ensure liveness and measure latency
+
+    // By default, network performance monitoring is disabled
+    #[cfg(feature = "network-perf-test")]
+    PerformanceMonitoringRequest(PerformanceMonitoringRequest), // A request to monitor network performance
 }
 
 impl PeerMonitoringServiceRequest {
@@ -20,6 +25,10 @@ impl PeerMonitoringServiceRequest {
             Self::GetNodeInformation => "get_node_information",
             Self::GetServerProtocolVersion => "get_server_protocol_version",
             Self::LatencyPing(_) => "latency_ping",
+
+            // By default, network performance monitoring is disabled
+            #[cfg(feature = "network-perf-test")]
+            Self::PerformanceMonitoringRequest(_) => "performance_monitoring_request",
         }
     }
 }
@@ -28,4 +37,16 @@ impl PeerMonitoringServiceRequest {
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub struct LatencyPingRequest {
     pub ping_counter: u64, // A monotonically increasing counter to verify latency ping responses
+}
+
+// By default, network performance monitoring is disabled
+cfg_block! {
+    #[cfg(feature = "network-perf-test")] {
+        /// The performance monitoring request
+        #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+        pub struct PerformanceMonitoringRequest {
+            pub request_counter: u64, // A monotonically increasing counter to verify responses
+            pub data: Vec<u8>, // A vector of bytes to send in the request
+        }
+    }
 }

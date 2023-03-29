@@ -15,5 +15,9 @@ rust-version = { workspace = true }
 [dependencies]
 aptos-config = { workspace = true }
 aptos-types = { workspace = true }
+cfg_block = { workspace = true }
 serde = { workspace = true }
 thiserror = { workspace = true }
+
+[features]
+network-perf-test = []

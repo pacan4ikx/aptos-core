@@ -82,3 +82,4 @@ failpoints = ["fail/failpoints", "aptos-consensus/failpoints", "aptos-executor/f
 indexer = ["aptos-indexer"]
 check-vm-features = []
 consensus-only-perf-test = ["aptos-executor/consensus-only-perf-test", "aptos-mempool/consensus-only-perf-test", "aptos-db/consensus-only-perf-test"]
+network-perf-test = []

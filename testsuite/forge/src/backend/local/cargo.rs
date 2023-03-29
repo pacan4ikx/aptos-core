@@ -28,6 +28,10 @@ pub fn build_consensus_only_node() -> bool {
     option_env!("CONSENSUS_ONLY_PERF_TEST").is_some()
 }
 
+pub fn build_network_perf_node() -> bool {
+    option_env!("NETWORK_PERF_TEST").is_some()
+}
+
 pub fn metadata() -> Result<Metadata> {
     let output = Command::new("cargo")
         .arg("metadata")
@@ -160,9 +164,13 @@ pub fn git_merge_base<R: AsRef<str>>(rev: R) -> Result<String> {
 pub fn cargo_build_common_args() -> Vec<&'static str> {
     let use_release = use_release();
     let consensus_only = build_consensus_only_node();
+    let network_perf = build_network_perf_node();
     let mut args = vec!["build", "--features=failpoints,indexer"];
     if consensus_only {
         args.push("--features=consensus-only-perf-test");
+    }
+    if network_perf {
+        args.push("--features=network-perf-test");
     }
     if use_release {
         args.push("--release");

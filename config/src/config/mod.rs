@@ -33,6 +33,8 @@ mod mempool_config;
 pub use mempool_config::*;
 mod network_config;
 pub use network_config::*;
+mod peer_monitoring_config;
+pub use peer_monitoring_config::*;
 mod secure_backend_config;
 pub use secure_backend_config::*;
 mod state_sync_config;
