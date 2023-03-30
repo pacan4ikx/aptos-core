@@ -207,6 +207,12 @@ fn main() -> Result<()> {
     let duration = Duration::from_secs(args.duration_secs as u64);
     let suite_name: &str = args.suite.as_ref();
 
+    let suite_name = if suite_name == "land_blocking" {
+        "publishing"
+    } else {
+        panic!();
+    };
+
     let runtime = Runtime::new()?;
     match args.cli_cmd {
         // cmd input for test
@@ -890,7 +896,7 @@ fn three_region_sim_graceful_overload(config: ForgeConfig) -> ForgeConfig {
 }
 
 fn individual_workload_tests(test_name: String, config: ForgeConfig) -> ForgeConfig {
-    let job = EmitJobRequest::default().mode(EmitJobMode::MaxLoad {
+    let mut job = EmitJobRequest::default().mode(EmitJobMode::MaxLoad {
         mempool_backlog: 30000,
     });
     config
@@ -927,6 +933,11 @@ fn individual_workload_tests(test_name: String, config: ForgeConfig) -> ForgeCon
                     vec![(write_type, 1)],
                 ])
             } else {
+                if test_name == "publishing" {
+                    job = job.max_transactions_per_account(1).mode(EmitJobMode::MaxLoad {
+                        mempool_backlog: 2000,
+                    });
+                }
                 job.transaction_type(match test_name.as_str() {
                     "account_creation" => TransactionType::default_account_generation(),
                     "nft_mint" => TransactionType::NftMintAndTransfer,

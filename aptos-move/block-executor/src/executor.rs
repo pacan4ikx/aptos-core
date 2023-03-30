@@ -35,7 +35,7 @@ use std::{
 };
 
 // todo: add this number to config and think about the number.
-const PER_BLOCK_GAS_LIMIT: u64 = 100000;
+const PER_BLOCK_GAS_LIMIT: u64 = 2000000;
 
 pub static RAYON_EXEC_POOL: Lazy<rayon::ThreadPool> = Lazy::new(|| {
     rayon::ThreadPoolBuilder::new()
