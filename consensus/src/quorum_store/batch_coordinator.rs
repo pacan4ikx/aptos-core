@@ -68,7 +68,7 @@ impl BatchCoordinator {
         let network_sender = self.network_sender.clone();
         let my_peer_id = self.my_peer_id;
         tokio::spawn(async move {
-            let peer_id = persist_request.value.author();
+            let peer_id = persist_request.author();
             if let Some(signed_batch_info) = batch_store.persist(persist_request) {
                 if my_peer_id != peer_id {
                     counters::RECEIVED_REMOTE_BATCHES_COUNT.inc();

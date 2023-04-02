@@ -20,8 +20,8 @@ pub struct PersistedValue {
     maybe_payload: Option<Vec<SignedTransaction>>,
 }
 
-#[derive(PartialEq)]
-pub enum StorageMode {
+#[derive(PartialEq, Debug)]
+pub(crate) enum StorageMode {
     PersistedOnly,
     MemoryAndPersisted,
 }
@@ -34,14 +34,14 @@ impl PersistedValue {
         }
     }
 
-    pub fn payload_storage_mode(&self) -> StorageMode {
+    pub(crate) fn payload_storage_mode(&self) -> StorageMode {
         match self.maybe_payload {
             Some(_) => StorageMode::MemoryAndPersisted,
             None => StorageMode::PersistedOnly,
         }
     }
 
-    pub fn take_payload(&mut self) -> Option<Vec<SignedTransaction>> {
+    pub(crate) fn take_payload(&mut self) -> Option<Vec<SignedTransaction>> {
         self.maybe_payload.take()
     }
 
@@ -118,6 +118,7 @@ impl BatchPayload {
             .get_or_init(|| bcs::serialized_size(&self).expect("unable to serialize batch payload"))
     }
 }
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Batch {
     batch_info: BatchInfo,
@@ -228,10 +229,7 @@ impl From<Batch> for PersistRequest {
             batch_info,
             payload,
         } = value;
-        Self {
-            digest: *batch_info.digest(),
-            value: PersistedValue::new(batch_info, Some(payload.into_transactions())),
-        }
+        PersistRequest::new(batch_info, Some(payload.into_transactions()))
     }
 }
 
